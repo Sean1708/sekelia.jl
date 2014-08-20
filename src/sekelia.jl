@@ -32,9 +32,7 @@ function connect(filename=nothing)
     if err != 0
         error("can't open $(filename): $(wrapper.sqlite3_errmsg(handle))")
     else
-        # return SQLiteDB(filename, handle)
-        println(filename)
-        println(handle)
+        return SQLiteDB(filename, handle)
     end
 end
 
