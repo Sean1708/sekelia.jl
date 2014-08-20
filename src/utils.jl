@@ -6,7 +6,7 @@ function fixfilename(name)
      sqlite so prepend these with "./". Also return ":memory" if name is none.
     =#
     if is(name, nothing)
-        return ":memory"
+        return ":memory:"
     elseif beginswith(name, ':')
         return "./" * name
     else
