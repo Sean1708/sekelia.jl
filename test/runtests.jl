@@ -1,5 +1,9 @@
 using sekelia
 using Base.Test
 
-# write your own tests here
-@test 1 == 1
+# test sekelia.utils.fixfilename()
+@test sekelia.utils.fixfilename(nothing) == ":memory:"
+@test sekelia.utils.fixfilename("") == ""
+@test sekelia.utils.fixfilename(":yo") == "./:yo"
+@test sekelia.utils.fixfilename("he") == "he"
+@test sekelia.utils.fixfilename("/he") == "/he"
