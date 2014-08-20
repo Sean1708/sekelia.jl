@@ -18,11 +18,15 @@ immutable SpecialDB
     name::String
 end
 utils.fixfilename(name::SpecialDB) = name.name
+
 immutable SpecialDBEnum
     memory::SpecialDB
     disk::SpecialDB
 
-    SpecialDBEnum() = new(SpecialDB(":memory:"), SpecialDB(""))
+    SpecialDBEnum() = new(
+        SpecialDB(":memory:"),
+        SpecialDB("")
+    )
 end
 const specialdbs = SpecialDBEnum()
 
