@@ -16,8 +16,6 @@ end
 utils.fixfilename(name::SpecialDB) = name.name
 
 
-
-# FUNCTIONS
 function connect(file=SPECIALDB.memory)
     #=
      Connect to and return the specified SQLite database.
@@ -27,19 +25,35 @@ function connect(file=SPECIALDB.memory)
      be created.
     =#
     file = utils.fixfilename(file)
-    handle = wrapper.sqlite3_open(file)
 
-    return SQLiteDB(file, handle)
+    handle_ptr = Array(Ptr{Void}, 1)
+    err = wrapper.sqlite3_open(file, handle_ptr)
+
+    handle = handle_ptr[1]
+    if err != SQLITE_OK
+        error("unable to open $(file): $(sqlite3_errmsg(handle))")
+    else
+        return SQLiteDB(file, handle)
+    end
 end
+# avoid name clashes with predefined connect
 connectdb = connect
 
 function close(db::SQLiteDB)
     #=
      Close the database connection and cause the handle to be unusable.
     =#
-    wrapper.sqlite3_close(db)
+    err = wrapper.sqlite3_close_v2(db.handle)
+
+    if err != SQLITE_OK
+        warn("error closing $(db.name): $(sqlite3_errmsg(db.handle))")
+    end
+
     db.name = ""
     db.handle = C_NULL
+
+    return nothing
 end
+
 
 end  # module
