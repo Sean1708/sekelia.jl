@@ -28,16 +28,16 @@ immutable SpecialDBEnum
         SpecialDB("")
     )
 end
-const specialdbs = SpecialDBEnum()
+const SPECIALDB = SpecialDBEnum()
 
 
-function connect(file=specialdbs.memory)
+function connect(file=SPECIALDB.memory)
     #=
      Connect to and return the specified SQLite database.
 
-     If no filename is given a temporary database will be created in memory. If
-     the filename is given as an empty string a temporary database will be
-     created on disk.
+     If the file is SPECIALDB.memory a temporary in-memory database will be
+     created. If the file is SPECIALDB.disk a temporary on-disk database will
+     be created.
     =#
     file = utils.fixfilename(file)
     handle_ptr = Array(Ptr{Void},1)
