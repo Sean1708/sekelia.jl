@@ -40,16 +40,9 @@ function connect(file=SPECIALDB.memory)
      be created.
     =#
     file = utils.fixfilename(file)
-    handle_ptr = Array(Ptr{Void},1)
+    handle = wrapper.sqlite3_open(file)
 
-    err = wrapper.sqlite3_open(file, handle_ptr)
-    handle = handle_ptr[1]
-
-    if err != 0
-        error("can't open $(file): $(wrapper.sqlite3_errmsg(handle))")
-    else
-        return SQLiteDB(file, handle)
-    end
+    return SQLiteDB(file, handle)
 end
 
 end  # module

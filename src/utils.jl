@@ -1,6 +1,6 @@
 function fixfilename(name)
     #=
-     Return a safe filename or ":memory" as required.
+     Return a safe filename.
 
      Filenames beginning with ':' may cause issues with future versions of
      sqlite so prepend these with "./".
