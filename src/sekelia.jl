@@ -13,7 +13,6 @@ end
 module utils
 include("utils.jl")
 end
-utils.fixfilename(name::SpecialDB) = name.name
 
 
 function connect(file=SPECIALDB.memory)
@@ -31,7 +30,7 @@ function connect(file=SPECIALDB.memory)
 
     handle = handle_ptr[1]
     if err != SQLITE_OK
-        error("unable to open $(file): $(sqlite3_errmsg(handle))")
+        error("unable to open $(file): $(wrapper.sqlite3_errmsg(handle))")
     else
         return SQLiteDB(file, handle)
     end
@@ -46,7 +45,7 @@ function close(db::SQLiteDB)
     err = wrapper.sqlite3_close_v2(db.handle)
 
     if err != SQLITE_OK
-        warn("error closing $(db.name): $(sqlite3_errmsg(db.handle))")
+        warn("error closing $(db.name): $(wrapper.sqlite3_errmsg(db.handle))")
     end
 
     db.name = ""

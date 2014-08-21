@@ -1,4 +1,4 @@
-const SQLITELIB = find_library(["libsqlite3"], [get(ENV, "SEKELIA_SQLITE", [])])
+using ..SQLITELIB
 
 
 function sqlite3_open(file, handle_ptr)

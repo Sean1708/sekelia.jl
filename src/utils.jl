@@ -1,3 +1,6 @@
+using ..SpecialDB
+
+
 function fixfilename(name)
     #=
      Return a safe filename.
@@ -11,3 +14,5 @@ function fixfilename(name)
         return name
     end
 end
+
+fixfilename(name::SpecialDB) = name.name
