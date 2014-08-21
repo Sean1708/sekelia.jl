@@ -1,5 +1,11 @@
 module sekelia
 
+
+export SPECIALDB, connectdb, close
+
+include("types.jl")
+include("constants.jl")
+
 module wrapper
 include("wrapper.jl")
 end
@@ -7,34 +13,11 @@ end
 module utils
 include("utils.jl")
 end
-
-
-export SPECIALDB, connectdb, close
-
-
-type SQLiteDB
-    name::String
-    handle::Ptr{Void}
-    # open::Bool if operating on closed dbs causes issues
-end
-
-immutable SpecialDB
-    name::String
-end
 utils.fixfilename(name::SpecialDB) = name.name
 
-immutable SpecialDBEnum
-    memory::SpecialDB
-    disk::SpecialDB
-
-    SpecialDBEnum() = new(
-        SpecialDB(":memory:"),
-        SpecialDB("")
-    )
-end
-const SPECIALDB = SpecialDBEnum()
 
 
+# FUNCTIONS
 function connect(file=SPECIALDB.memory)
     #=
      Connect to and return the specified SQLite database.
