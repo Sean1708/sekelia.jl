@@ -27,6 +27,22 @@ function sqlite3_open(file)
     end
 end
 
+function sqlite3_close(db)
+    #=
+     Close database pointed to by handle.
+    =#
+    err = ccall(
+        (:sqlite3_close_v2, SQLITELIB),
+        Cint,
+        (Ptr{Void},),
+        db.handle
+    )
+
+    if err != SQLITE_OK
+        warn("error closing $(db.name): $(sqlite3_errmsg(db.handle))")
+    end
+end
+
 function sqlite3_errmsg(handle)
     #=
      Query error message from database pointed to by handle.

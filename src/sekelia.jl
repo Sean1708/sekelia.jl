@@ -9,9 +9,13 @@ include("utils.jl")
 end
 
 
+export SPECIALDB, connectdb, close
+
+
 type SQLiteDB
     name::String
     handle::Ptr{Void}
+    # open::Bool if operating on closed dbs causes issues
 end
 
 immutable SpecialDB
@@ -43,6 +47,16 @@ function connect(file=SPECIALDB.memory)
     handle = wrapper.sqlite3_open(file)
 
     return SQLiteDB(file, handle)
+end
+connectdb = connect
+
+function close(db::SQLiteDB)
+    #=
+     Close the database connection and cause the handle to be unusable.
+    =#
+    wrapper.sqlite3_close(db)
+    db.name = ""
+    db.handle = C_NULL
 end
 
 end  # module
