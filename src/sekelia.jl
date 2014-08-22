@@ -47,11 +47,6 @@ function close(db::SQLiteDB)
     if err != SQLITE_OK
         warn("error closing $(db.name): $(wrapper.sqlite3_errmsg(db.handle))")
     end
-
-    db.name = ""
-    db.handle = C_NULL
-
-    return nothing
 end
 
 
