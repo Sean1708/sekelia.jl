@@ -27,10 +27,10 @@ function connect(file=SPECIALDB.memory)
 
     handle_ptr = Array(Ptr{Void}, 1)
     err = wrapper.sqlite3_open(file, handle_ptr)
-
     handle = handle_ptr[1]
+
     if err != SQLITE_OK
-        error("unable to open $(file): $(wrapper.sqlite3_errmsg(handle))")
+        error("unable to open $(file): $(wrapper.sqlite3_errstr(err))")
     else
         return SQLiteDB(file, handle)
     end
@@ -45,7 +45,7 @@ function close(db::SQLiteDB)
     err = wrapper.sqlite3_close_v2(db.handle)
 
     if err != SQLITE_OK
-        warn("error closing $(db.name): $(wrapper.sqlite3_errmsg(db.handle))")
+        warn("error closing $(db.name): $(wrapper.sqlite3_errstr(err))")
     end
 end
 

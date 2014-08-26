@@ -45,3 +45,17 @@ function sqlite3_errmsg(handle)
         )
     )
 end
+
+function sqlite3_errstr(errcode)
+    #=
+     Return the error message which describes errcode as a String.
+    =#
+    return bytestring(
+        ccall(
+            (:sqlite3_errstr, SQLITELIB),
+            Ptr{Uint8},
+            (Cint,),
+            errcode
+        )
+    )
+end
