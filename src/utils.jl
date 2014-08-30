@@ -14,5 +14,12 @@ function fixfilename(name)
         return name
     end
 end
-
+# change name to something else
 fixfilename(name::SpecialDB) = name.name
+
+function ismult(stmt)
+    #=
+     Attempt to determine if stmt contains multiple SQLite statements.
+    =#
+    return rsearchindex(stmt, ";", endof(stmt)-1) > 0
+end

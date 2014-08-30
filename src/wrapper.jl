@@ -30,6 +30,126 @@ function sqlite3_close_v2(handle)
     )
 end
 
+function sqlite3_prepare_v2(handle, query, statement, tail)
+    #=
+     Compile query to a byte-code program that can be executed.
+    =#
+    return int(
+        ccall(
+            (:sqlite3_prepare_v2, SQLITELIB),
+            Cint,
+            (Ptr{Void}, Ptr{Uint8}, Cint, Ptr{Void}, Ptr{Void}),
+            handle,
+            query,
+            sizeof(query)+1,  # ensure NUL character is included
+            statement,
+            tail
+        )
+    )
+end
+
+function sqlite3_step(stmt)
+    #=
+     Evaluate previously compiled statement.
+    =#
+    return int(
+        ccall(
+            (:sqlite3_step, SQLITELIB),
+            Cint,
+            (Ptr{Void},),
+            stmt
+        )
+    )
+end
+
+function sqlite3_column_count(stmt)
+    #=
+     Query number of columns in returned results.
+    =#
+    return int(
+        ccall(
+            (:sqlite3_column_count, SQLITELIB),
+            Cint,
+            (Ptr{Void},),
+            stmt
+        )
+    )
+end
+
+function sqlite3_column_type(stmt, col)
+    #=
+     Query the type of column col.
+    =#
+    return int(
+        ccall(
+            (:sqlite3_column_type, SQLITELIB),
+            Cint,
+            (Ptr{Void}, Cint),
+            stmt,
+            col
+        )
+    )
+end
+
+function sqlite3_column_double(stmt, col)
+    #=
+     Retrieve the value from column col in the current row coverted to double.
+    =#
+    return float(
+        ccall(
+            (:sqlite3_column_double, SQLITELIB),
+            Cdouble,
+            (Ptr{Void}, Cint),
+            stmt,
+            col
+        )
+    )
+end
+
+function sqlite3_column_int(stmt, col)
+    #=
+     Retrieve the value from column col in the current row coverted to int.
+    =#
+    return int(
+        ccall(
+            (:sqlite3_column_int, SQLITELIB),
+            Cint,
+            (Ptr{Void}, Cint),
+            stmt,
+            col
+        )
+    )
+end
+
+function sqlite3_column_text(stmt, col)
+    #=
+     Retrieve the value from column col in the current row coverted to char*.
+    =#
+    return bytestring(
+        ccall(
+            (:sqlite3_column_text, SQLITELIB),
+            Ptr{Uint8},
+            (Ptr{Void}, Cint),
+            stmt,
+            col
+        )
+    )
+end
+
+function sqlite3_finalize(stmt)
+    #=
+     Free memory associated with the statement pointer.
+    =#
+    return int(
+        ccall(
+            (:sqlite3_finalize, SQLITELIB),
+            Cint,
+            (Ptr{Void},),
+            stmt
+        )
+    )
+end
+
 function sqlite3_errmsg(handle)
     #=
      Query error message from database pointed to by handle.
