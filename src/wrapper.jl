@@ -1,65 +1,80 @@
 using ..SQLITELIB
+include("SQLite_consts.jl")
 
 
-function sqlite3_open(file, handle_ptr)
+function sqlite3_open(file)
     #=
      Create or open SQLite3 database.
     =#
-    return int(
-        ccall(
-            (:sqlite3_open, SQLITELIB),
-            Cint,
-            (Ptr{Uint8}, Ptr{Void}),
-            file,
-            handle_ptr
-        )
+    handle_ptr = Array(Ptr{Void}, 1)
+    err = ccall(
+        (:sqlite3_open, SQLITELIB),
+        Cint,
+        (Ptr{Uint8}, Ptr{Void}),
+        file,
+        handle_ptr
     )
+    if err != SQLITE_OK
+        error("unable to open $(file): $(sqlite3_errstr(err))")
+    else
+        return handle_ptr[1]
+    end
 end
 
 function sqlite3_close_v2(handle)
     #=
      Close database pointed to by handle.
     =#
-    return int(
-        ccall(
-            (:sqlite3_close_v2, SQLITELIB),
-            Cint,
-            (Ptr{Void},),
-            handle
-        )
+    err = ccall(
+        (:sqlite3_close_v2, SQLITELIB),
+        Cint,
+        (Ptr{Void},),
+        handle
     )
+    if err != SQLITE_OK
+        warn("error closing $(db.name): $(sqlite3_errstr(err))")
+    end
 end
 
-function sqlite3_prepare_v2(handle, query, statement, tail)
+function sqlite3_prepare_v2(handle, query)
     #=
      Compile query to a byte-code program that can be executed.
     =#
-    return int(
-        ccall(
-            (:sqlite3_prepare_v2, SQLITELIB),
-            Cint,
-            (Ptr{Void}, Ptr{Uint8}, Cint, Ptr{Void}, Ptr{Void}),
-            handle,
-            query,
-            sizeof(query)+1,  # ensure NUL character is included
-            statement,
-            tail
-        )
+    prepstmt_ptr = Array(Ptr{Void}, 1)
+    err = ccall(
+        (:sqlite3_prepare_v2, SQLITELIB),
+        Cint,
+        (Ptr{Void}, Ptr{Uint8}, Cint, Ptr{Void}, Ptr{Void}),
+        handle,
+        query,
+        sizeof(query)+1,  # ensure NUL character is included
+        prepstmt_ptr,
+        [C_NULL]
     )
+    if err != SQLITE_OK
+        error("could not prepare statement: $(sqlite3_errstr(err))")
+    else
+        return prepstmt_ptr[1]
+    end
 end
 
 function sqlite3_step(stmt)
     #=
      Evaluate previously compiled statement.
     =#
-    return int(
-        ccall(
-            (:sqlite3_step, SQLITELIB),
-            Cint,
-            (Ptr{Void},),
-            stmt
-        )
+    err = ccall(
+        (:sqlite3_step, SQLITELIB),
+        Cint,
+        (Ptr{Void},),
+        stmt
     )
+    if err == SQLITE_DONE || err == SQLITE_ROW
+        return err
+    else
+        # ensure statement is finalised even on error
+        sqlite3_finalize(stmt)
+        error("error executing statement: $(sqlite3_errstr(err))")
+    end
 end
 
 function sqlite3_column_count(stmt)
@@ -140,14 +155,15 @@ function sqlite3_finalize(stmt)
     #=
      Free memory associated with the statement pointer.
     =#
-    return int(
-        ccall(
-            (:sqlite3_finalize, SQLITELIB),
-            Cint,
-            (Ptr{Void},),
-            stmt
-        )
+    err = ccall(
+        (:sqlite3_finalize, SQLITELIB),
+        Cint,
+        (Ptr{Void},),
+        stmt
     )
+    if err != SQLITE_OK
+        warn("could not finalise statement: $(sqlite3_errstr(err))")
+    end
 end
 
 function sqlite3_errmsg(handle)

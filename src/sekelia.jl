@@ -1,10 +1,37 @@
 module sekelia
 
+# look for user's libsqlite3 and throw error if it could not be found
+const SQLITELIB = begin
+    local lib = find_library(
+        ["libsqlite3"],
+        [get(ENV, "SEKELIA_SQLITE", [])]
+    )
+    if lib == ""
+        info("libsqlite3 could not be found")
+        info("consider setting SEKELIA_SQLITE environment variable")
+        error("SQLite3 library could not be loaded")
+    else
+        lib
+    end
+end
 
-export SPECIALDB, connectdb, close, execute
+# wrapper around a string so that multiple dispatch can be used for
+# util.fixfilename(). this is simpler than checkng for ":memory:" or ""
+immutable SpecialDB
+    specifier::String
+end
 
-include("types.jl")
-include("constants.jl")
+immutable SpecialDBEnum
+    memory::SpecialDB
+    disk::SpecialDB
+
+    SpecialDBEnum() = new(
+        SpecialDB(":memory:"),
+        SpecialDB("")
+    )
+end
+const SPECIALDB = SpecialDBEnum()
+
 
 module wrapper
 include("wrapper.jl")
@@ -12,6 +39,18 @@ end
 
 module utils
 include("utils.jl")
+end
+
+export SPECIALDB, connectdb, close, execute
+
+
+type SQLiteDB
+    #=
+     name : filename of the database
+     handle : pointer associated with the database
+    =#
+    name::String
+    handle::Ptr{Void}
 end
 
 
@@ -24,15 +63,8 @@ function connect(file=SPECIALDB.memory)
      be created.
     =#
     file = utils.fixfilename(file)
-
-    handle_ptr = Array(Ptr{Void}, 1)
-    err = wrapper.sqlite3_open(file, handle_ptr)
-    handle = handle_ptr[1]
-    if err != SQLITE_OK
-        error("unable to open $(file): $(wrapper.sqlite3_errstr(err))")
-    else
-        return SQLiteDB(file, handle)
-    end
+    handle = wrapper.sqlite3_open(file)
+    return SQLiteDB(file, handle)
 end
 # avoid name clashes with predefined connect
 connectdb = connect
@@ -41,10 +73,7 @@ function close(db::SQLiteDB)
     #=
      Close the database connection and cause the handle to be unusable.
     =#
-    err = wrapper.sqlite3_close_v2(db.handle)
-    if err != SQLITE_OK
-        warn("error closing $(db.name): $(wrapper.sqlite3_errstr(err))")
-    end
+    wrapper.sqlite3_close_v2(db.handle)
 end
 
 function execute(db, stmt)
@@ -65,23 +94,10 @@ function execute(db, stmt)
         warn("only the first statement will be executed")
     end
 
-    prepstmt_ptr = Array(Ptr{Void}, 1)
-    err = wrapper.sqlite3_prepare_v2(db.handle, stmt, prepstmt_ptr, [C_NULL])
-    prepstmt = prepstmt_ptr[1]
-    if err != SQLITE_OK
-        error("could not execute statement: $(wrapper.sqlite3_errstr(err))")
-    end
+    prepstmt = wrapper.sqlite3_prepare_v2(db.handle, stmt)
+    status = wrapper.sqlite3_step(prepstmt)
 
-    err = wrapper.sqlite3_step(prepstmt)
-    if err != SQLITE_DONE
-        wrapper.sqlite3_finalize(prepstmt)
-        error("error executing statment: $(wrapper.sqlite3_errstr(err))")
-    end
-
-    err = wrapper.sqlite3_finalize(prepstmt)
-    if err != SQLITE_OK
-        warn("possible error executing: $(wrapper.sqlite3_errstr(err))")
-    end
+    wrapper.sqlite3_finalize(prepstmt)
 end
 
 

@@ -14,8 +14,7 @@ function fixfilename(name)
         return name
     end
 end
-# change name to something else
-fixfilename(name::SpecialDB) = name.name
+fixfilename(name::SpecialDB) = name.specifier
 
 function ismult(stmt)
     #=
