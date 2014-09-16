@@ -20,7 +20,6 @@ end
 immutable SpecialDB
     specifier::String
 end
-
 immutable SpecialDBEnum
     memory::SpecialDB
     disk::SpecialDB
@@ -97,7 +96,11 @@ function execute(db, stmt)
     prepstmt = wrapper.sqlite3_prepare_v2(db.handle, stmt)
     status = wrapper.sqlite3_step(prepstmt)
 
-    wrapper.sqlite3_finalize(prepstmt)
+    if status == wrapper.SQLITE_ROW
+        return @task utils.rowiter(prepstmt)
+    else
+        wrapper.sqlite3_finalize(prepstmt)
+    end
 end
 
 
