@@ -89,9 +89,7 @@ function execute(db, stmt; header=false, types=false)
      execute() will only execute the first statement passed and will attempt to
      warn the user if multiple statements are passed.
     =#
-    if utils.ismult(stmt)
-        warn("only the first statement will be executed")
-    end
+    utils.ismult(stmt) && warn("only the first statement will be executed")
 
     prepstmt = wrapper.sqlite3_prepare_v2(db.handle, stmt)
     status = wrapper.sqlite3_step(prepstmt)

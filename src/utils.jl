@@ -85,12 +85,8 @@ function rowiter(prepstmt, header, types)
     ncol = wrapper.sqlite3_column_count(prepstmt)
     status = wrapper.SQLITE_ROW
 
-    if header
-        produce(ntuple(ncol, i -> retrievecolname(prepstmt, i)))
-    end
-    if types
-        produce(ntuple(ncol, i -> retrievecoltype(prepstmt, i)))
-    end
+    header && produce(ntuple(ncol, i -> retrievecolname(prepstmt, i)))
+    types && produce(ntuple(ncol, i -> retrievecoltype(prepstmt, i)))
 
     while status != wrapper.SQLITE_DONE
         produce(ntuple(ncol, i -> retrieverow(prepstmt, i)))
