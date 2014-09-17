@@ -47,7 +47,39 @@ function retrieverow(prepstmt, i)
     end
 end
 
-function rowiter(prepstmt)
+function retrievecolname(prepstmt, i)
+    #=
+     Retrieve the name of the i-th column.
+    =#
+    col = i - 1
+    return wrapper.sqlite3_column_name(prepstmt, col)
+end
+
+function retrievecoltype(prepstmt, i)
+    #=
+     Retrieve the concrete julia type of the i-th column.
+    =#
+    col = i - 1
+    coltype = wrapper.sqlite3_column_type(prepstmt, col)
+
+    if coltype == wrapper.SQLITE_INTEGER
+        # Int is an alias to the correct concrete type
+        return Int
+    elseif coltype == wrapper.SQLITE_FLOAT
+        # standard floats are 64-bit
+        return Float64
+    elseif coltype == wrapper.SQLITE_TEXT
+        return typeof("")
+    elseif coltype == wrapper.SQLITE_BLOB
+        return typeof("")
+    elseif coltype == wrapper.SQLITE_NULL
+        return Nothing
+    else
+        error("unknown datatype code: $(coltype)")
+    end
+end
+
+function rowiter(prepstmt, header, types)
     #=
      Iterate through rows returned by prepstmt.
 
@@ -56,6 +88,13 @@ function rowiter(prepstmt)
     =#
     ncol = wrapper.sqlite3_column_count(prepstmt)
     status = wrapper.SQLITE_ROW
+
+    if header
+        produce(ntuple(ncol, i -> retrievecolname(prepstmt, i)))
+    end
+    if types
+        produce(ntuple(ncol, i -> retrievecoltype(prepstmt, i)))
+    end
 
     while status != wrapper.SQLITE_DONE
         produce(ntuple(ncol, i -> retrieverow(prepstmt, i)))

@@ -75,7 +75,7 @@ function close(db::SQLiteDB)
     wrapper.sqlite3_close_v2(db.handle)
 end
 
-function execute(db, stmt)
+function execute(db, stmt; header=false, types=false)
     #=
      Execute the given statement on the given db, returning results if any.
 
@@ -97,7 +97,7 @@ function execute(db, stmt)
     status = wrapper.sqlite3_step(prepstmt)
 
     if status == wrapper.SQLITE_ROW
-        return @task utils.rowiter(prepstmt)
+        return @task utils.rowiter(prepstmt, header, types)
     else
         wrapper.sqlite3_finalize(prepstmt)
     end

@@ -91,6 +91,22 @@ function sqlite3_column_count(stmt)
     )
 end
 
+function sqlite3_column_name(stmt, col)
+    #=
+     Query the name of column col.
+    =#
+    return bytestring(
+        ccall(
+            (:sqlite3_column_name, SQLITELIB),
+            Ptr{Uint8},
+            (Ptr{Void}, Cint),
+            stmt,
+            col
+        )
+    )
+end
+        
+
 function sqlite3_column_type(stmt, col)
     #=
      Query the type of column col.
