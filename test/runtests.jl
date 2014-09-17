@@ -11,4 +11,4 @@ using Base.Test
 # test sekelia.utils.ismult()
 @test sekelia.utils.ismult("INSERT INTO Students VALUES ('Robert');") == false
 @test sekelia.utils.ismult("INSERT INTO Students VALUES ('Robert')") == false
-@test sekelia.utils.ismult("INSERT INTO Students VALUES ('Robert'); DROP TABLE Students;--')") == false
+@test sekelia.utils.ismult("INSERT INTO Students VALUES ('Robert'); DROP TABLE Students;--')") == true
