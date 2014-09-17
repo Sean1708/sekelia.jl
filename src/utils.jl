@@ -24,12 +24,10 @@ function ismult(stmt)
     return rsearchindex(stmt, ";", endof(stmt)-1) > 0
 end
 
-function retrieverow(prepstmt, i)
+function retrieverow(prepstmt, col)
     #=
      Retrieve the i-th value from the current row.
     =#
-    # sqlite is 0 indexed, julia ain't
-    col = i - 1
     coltype = wrapper.sqlite3_column_type(prepstmt, col)
 
     if coltype == wrapper.SQLITE_INTEGER
@@ -47,19 +45,17 @@ function retrieverow(prepstmt, i)
     end
 end
 
-function retrievecolname(prepstmt, i)
+function retrievecolname(prepstmt, col)
     #=
      Retrieve the name of the i-th column.
     =#
-    col = i - 1
     return wrapper.sqlite3_column_name(prepstmt, col)
 end
 
-function retrievecoltype(prepstmt, i)
+function retrievecoltype(prepstmt, col)
     #=
      Retrieve the concrete julia type of the i-th column.
     =#
-    col = i - 1
     coltype = wrapper.sqlite3_column_type(prepstmt, col)
 
     if coltype == wrapper.SQLITE_INTEGER

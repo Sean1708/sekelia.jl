@@ -95,6 +95,8 @@ function sqlite3_column_name(stmt, col)
     #=
      Query the name of column col.
     =#
+    # sqlite is 0-indexed, julia ain't
+    col -= 1
     return bytestring(
         ccall(
             (:sqlite3_column_name, SQLITELIB),
@@ -111,6 +113,8 @@ function sqlite3_column_type(stmt, col)
     #=
      Query the type of column col.
     =#
+    # sqlite is 0-indexed, julia ain't
+    col -= 1
     return int(
         ccall(
             (:sqlite3_column_type, SQLITELIB),
@@ -126,6 +130,8 @@ function sqlite3_column_double(stmt, col)
     #=
      Retrieve the value from column col in the current row coverted to double.
     =#
+    # sqlite is 0-indexed, julia ain't
+    col -= 1
     return float(
         ccall(
             (:sqlite3_column_double, SQLITELIB),
@@ -141,6 +147,8 @@ function sqlite3_column_int(stmt, col)
     #=
      Retrieve the value from column col in the current row coverted to int.
     =#
+    # sqlite is 0-indexed, julia ain't
+    col -= 1
     return int(
         ccall(
             (:sqlite3_column_int, SQLITELIB),
@@ -156,6 +164,8 @@ function sqlite3_column_text(stmt, col)
     #=
      Retrieve the value from column col in the current row coverted to char*.
     =#
+    # sqlite is 0-indexed, julia ain't
+    col -= 1
     return bytestring(
         ccall(
             (:sqlite3_column_text, SQLITELIB),
