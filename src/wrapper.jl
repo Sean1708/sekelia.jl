@@ -163,6 +163,8 @@ end
 function sqlite3_column_text(stmt, col)
     #=
      Retrieve the value from column col in the current row coverted to char*.
+
+     Return the value as a julia String.
     =#
     # sqlite is 0-indexed, julia ain't
     col -= 1
@@ -177,6 +179,37 @@ function sqlite3_column_text(stmt, col)
     )
 end
 
+function sqlite3_column_blob(stmt, col)
+    #=
+     Retrieve the value from column col in the current row converted to char*.
+
+     Return the value as a julia bytearray. The sqlite3_column_text function is
+     used since the only conversion that happens from BLOB to TEXT is the
+     addition of a nul-byte.
+    =#
+    # sqlite is 0-indexed, julia ain't
+    col -= 1
+    temparr = pointer_to_array(
+        ccall(
+            (:sqlite3_column_text, SQLITELIB),
+            Ptr{Uint8},
+            (Ptr{Void}, Cint),
+            stmt,
+            col
+        ),
+        ccall(
+            (:sqlite3_column_bytes, SQLITELIB),
+            Cint,
+            (Ptr{Void}, Cint),
+            stmt,
+            col
+        )
+    )
+    # return a deepcopy otherwise values in the array are prone to changing when
+    # the statement is finalised
+    return deepcopy(temparr)
+end
+     
 function sqlite3_finalize(stmt)
     #=
      Free memory associated with the statement pointer.

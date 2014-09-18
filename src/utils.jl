@@ -37,7 +37,7 @@ function retrieverow(prepstmt, col)
     elseif coltype == wrapper.SQLITE_TEXT
         return wrapper.sqlite3_column_text(prepstmt, col)
     elseif coltype == wrapper.SQLITE_BLOB
-        return wrapper.sqlite3_column_text(prepstmt, col)
+        return wrapper.sqlite3_column_blob(prepstmt, col)
     elseif coltype == wrapper.SQLITE_NULL
         return nothing
     else
@@ -67,8 +67,10 @@ function retrievecoltype(prepstmt, col)
     elseif coltype == wrapper.SQLITE_TEXT
         return typeof("")
     elseif coltype == wrapper.SQLITE_BLOB
-        return typeof("")
+        # blobs are treated as bytearrays
+        return Array{Uint8, 1}
     elseif coltype == wrapper.SQLITE_NULL
+        # Null is nothing
         return Nothing
     else
         error("unknown datatype code: $(coltype)")
