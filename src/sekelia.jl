@@ -32,7 +32,7 @@ module utils
 include("utils.jl")
 end
 
-export SPECIALDB, connectdb, close, execute
+export MEMDB, DISKDB, connectdb, close, execute, transaction, commit, rollback
 
 
 type SQLiteDB
@@ -43,14 +43,6 @@ type SQLiteDB
     name::String
     handle::Ptr{Void}
 end
-
-# allow differentiation between a transaction mode and savepoint name
-immutable TransactionMode
-    specifier::String
-end
-const DEFERRED = TransactionMode("DEFERRED")
-const IMMEDIATE = TransactionMode("IMMEDIATE")
-const EXCLUSIVE = TransactionMode("EXCLUSIVE")
 
 
 function connect(file=MEMDB)
