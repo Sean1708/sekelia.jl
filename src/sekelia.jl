@@ -15,8 +15,8 @@ const SQLITELIB = begin
     end
 end
 
-# wrapper around a string so that multiple dispatch can be used for
-# util.fixfilename(). this is simpler than checkng for ":memory:" or ""
+
+# bypass database name checking in utils.fixfilename()
 immutable SpecialDB
     specifier::String
 end
@@ -43,6 +43,14 @@ type SQLiteDB
     name::String
     handle::Ptr{Void}
 end
+
+# allow differentiation between a transaction mode and savepoint name
+immutable TransactionMode
+    specifier::String
+end
+const DEFERRED = TransactionMode("DEFERRED")
+const IMMEDIATE = TransactionMode("IMMEDIATE")
+const EXCLUSIVE = TransactionMode("EXCLUSIVE")
 
 
 function connect(file=MEMDB)
@@ -90,6 +98,67 @@ function execute(db, stmt; header=false, types=false)
         return @task utils.rowiter(prepstmt, header, types)
     else
         wrapper.sqlite3_finalize(prepstmt)
+    end
+end
+
+function transaction(db, mode="DEFERRED")
+    #=
+     Begin a transaction in the spedified mode, default "DEFERRED".
+
+     If mode is one of "", "DEFERRED", "IMMEDIATE" or "EXCLUSIVE" then a
+     transaction of that (or the dafault) type is started. Otherwise a savepoint
+     is created whose name is mode converted to String.
+    =#
+    if upper(mode) in ["", "DEFERRED", "IMMEDIATE", "EXCLUSIVE"]
+        execute(db, "BEGIN $(mode) TRANSACTION;")
+    else
+        execute(db, "SAVEPOINT $(mode);")
+    end
+end
+
+function commit(db)
+    #=
+     Commit the current transaction.
+    =#
+    execute(db, "COMMIT TRANSACTION;")
+end
+
+function commit(db, name)
+    #=
+     Release the savepoint whose name is name converted to String.
+    =#
+    execute(db, "RELEASE SAVEPOINT $(name);")
+end
+
+function rollback(db)
+    #=
+     Rollback current transaction.
+    =#
+    execute(db, "ROLLBACK TRANSACTION;")
+end
+
+function rollback(db, name)
+    #=
+     Rollback to savepoint whose name is name converted to String.
+    =#
+    execute(db, "ROLLBACK TRANSACTION TO SAVEPOINT $(name);")
+end
+
+function transaction(f:Function, db)
+    #=
+     Execute the function f within a transaction.
+    =#
+    # generate a random name for the savepoint
+    name = randstring(rand(10:50))
+    transaction(db, name)
+    try
+        f()
+    catch
+        rollback(db, name)
+        rethrow()
+    finally
+        # savepoints are not released on rollback
+        commit(db, name)
     end
 end
 
