@@ -20,16 +20,8 @@ end
 immutable SpecialDB
     specifier::String
 end
-immutable SpecialDBEnum
-    memory::SpecialDB
-    disk::SpecialDB
-
-    SpecialDBEnum() = new(
-        SpecialDB(":memory:"),
-        SpecialDB("")
-    )
-end
-const SPECIALDB = SpecialDBEnum()
+const MEMDB = SpecialDB(":memory:")
+const DISKDB = SpecialDB("")
 
 
 module wrapper
@@ -53,12 +45,12 @@ type SQLiteDB
 end
 
 
-function connect(file=SPECIALDB.memory)
+function connect(file=MEMDB)
     #=
      Connect to and return the specified SQLite database.
 
-     If the file is SPECIALDB.memory a temporary in-memory database will be
-     created. If the file is SPECIALDB.disk a temporary on-disk database will
+     If the file is MEMDB a temporary in-memory database will be
+     created. If the file is DISKDB a temporary on-disk database will
      be created.
     =#
     file = utils.fixfilename(file)
