@@ -21,7 +21,29 @@ function ismult(stmt)
     #=
      Attempt to determine if stmt contains multiple SQLite statements.
     =#
-    return rsearchindex(stmt, ";", endof(stmt)-1) > 0
+    # quotes denoted by ', " or `
+    quotequote = false
+    quotemarks = ('\'', '"', '`')
+    # quotes denoted by []
+    bracequote = false
+    for c in stmt[1:end-1]
+        if c in quotemarks && !bracequote
+            quotequote = !quotequote
+        elseif c == '[' && !quotequote
+            bracequote = true
+        elseif c == ']' && bracequote
+            bracequote = false
+        elseif quotequote || bracequote
+            # characters inside quotes can't end statements
+            continue
+        elseif c == ';'
+            # if an unquoted ';' was found return true
+            return true
+        end
+    end
+
+    # if an unquoted ; was not found return false
+    return false
 end
 
 function retrieverow(prepstmt, col)

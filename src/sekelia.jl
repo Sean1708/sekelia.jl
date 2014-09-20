@@ -98,7 +98,7 @@ function transaction(db, mode="DEFERRED")
      Begin a transaction in the spedified mode, default "DEFERRED".
 
      If mode is one of "", "DEFERRED", "IMMEDIATE" or "EXCLUSIVE" then a
-     transaction of that (or the dafault) type is started. Otherwise a savepoint
+     transaction of that (or the default) type is started. Otherwise a savepoint
      is created whose name is mode converted to String.
     =#
     if upper(mode) in ["", "DEFERRED", "IMMEDIATE", "EXCLUSIVE"]
@@ -136,7 +136,7 @@ function rollback(db, name)
     execute(db, "ROLLBACK TRANSACTION TO SAVEPOINT $(name);")
 end
 
-function transaction(f:Function, db)
+function transaction(f::Function, db)
     #=
      Execute the function f within a transaction.
     =#
