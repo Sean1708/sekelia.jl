@@ -26,6 +26,7 @@ function ismult(stmt)
     quotemarks = ('\'', '"', '`')
     # quotes denoted by []
     bracequote = false
+    # doesn't matter what the last character is as it can't start a new stmt
     for c in stmt[1:end-1]
         if c in quotemarks && !bracequote
             quotequote = !quotequote
@@ -53,7 +54,11 @@ function retrieverow(prepstmt, col)
     coltype = wrapper.sqlite3_column_type(prepstmt, col)
 
     if coltype == wrapper.SQLITE_INTEGER
-        return wrapper.sqlite3_column_int(prepstmt, col)
+        if WORD_SIZE == 64
+            return wrapper.sqlite3_column_int64(prepstmt, col)
+        else
+            return wrapper.sqlite3_column_int(prepstmt, col)
+        end
     elseif coltype == wrapper.SQLITE_FLOAT
         return wrapper.sqlite3_column_double(prepstmt, col)
     elseif coltype == wrapper.SQLITE_TEXT

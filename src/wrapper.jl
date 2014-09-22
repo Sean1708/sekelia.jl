@@ -108,7 +108,6 @@ function sqlite3_column_name(stmt, col)
     )
 end
         
-
 function sqlite3_column_type(stmt, col)
     #=
      Query the type of column col.
@@ -145,14 +144,31 @@ end
 
 function sqlite3_column_int(stmt, col)
     #=
-     Retrieve the value from column col in the current row coverted to int.
+     Retrieve the value from column col in the current row coverted to int32.
     =#
     # sqlite is 0-indexed, julia ain't
     col -= 1
-    return int(
+    return int32(
         ccall(
             (:sqlite3_column_int, SQLITELIB),
             Cint,
+            (Ptr{Void}, Cint),
+            stmt,
+            col
+        )
+    )
+end
+
+function sqlite3_column_int64(stmt, col)
+    #=
+     Retrieve the value from column col in the current row coverted to int64.
+    =#
+    # sqlite is 0-indexed, julia ain't
+    col -= 1
+    return int64(
+        ccall(
+            (:sqlite3_column_int64, SQLITELIB),
+            Clonglong,
             (Ptr{Void}, Cint),
             stmt,
             col
