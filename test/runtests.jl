@@ -21,19 +21,46 @@ sekelia.execute(
     db,
     """CREATE TABLE testtable (
         testcol TEXT,
-        colnum INTEGER
-    ); INSERT INTO testtable VALUES ("This should not be inserted.", 0)"""
+        num INTEGER,
+        fl REAL,
+        bl BLOB
+    );"""
 )
-sekelia.execute(db, """INSERT INTO testtable VALUES ("First row.", 1)""")
-sekelia.execute(db, """INSERT INTO testtable VALUES ("Second row.", 2)""")
-sekelia.execute(db, """INSERT INTO testtable VALUES ("Third row.", 3)""")
+sekelia.execute(
+    db,
+    """INSERT INTO testtable VALUES (
+        'First row.',
+        1,
+        1.1,
+        X'010101'
+    );"""
+)
+sekelia.execute(
+    db,
+    """INSERT INTO testtable VALUES (
+        'Second row.',
+        2,
+        2.2,
+        NULL
+    )"""
+)
+sekelia.execute(
+    db,
+    """INSERT INTO testtable VALUES (?, ?, ?, ?)""",
+    "Third row.",
+    3,
+    3.3,
+    Uint8[3, 3, 3]
+)
+@test_throws Exception sekelia.execute(db, "SELECT * FROM testtable; VACUUM;")
 
 res = sekelia.execute(db, "SELECT * FROM testtable"; header=true, types=true)
-@test consume(res) == ("testcol", "colnum")
-@test consume(res) <: (String, Integer)
-@test consume(res) == ("First row.", 1)
-@test consume(res) == ("Second row.", 2)
-@test consume(res) == ("Third row.", 3)
+@test consume(res) == ("testcol", "num", "fl", "bl")
+@test consume(res) <: (String, Union(Int32, Int64), Float64, Vector{Uint8})
+@test consume(res) == ("First row.", 1, 1.1, Uint8[1,1,1])
+@test consume(res) == ("Second row.", 2, 2.2, nothing)
+@test consume(res) == ("Third row.", 3, 3.3, Uint8[3,3,3])
+# finalize statement
 consume(res)
 
 sekelia.close(db)

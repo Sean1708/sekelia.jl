@@ -318,10 +318,11 @@ function sqlite3_bind_text(stmt, i, val)
     err = ccall(
         (:sqlite3_bind_text, SQLITELIB),
         Cint,
-        (Ptr{Void}, Cint, Cdouble, Void),
+        (Ptr{Void}, Cint, Ptr{Uint8}, Cint, Ptr{Void}),
         stmt,
         i,
         val,
+        sizeof(val)+1,
         -1  # SQLITE_TRANSIENT
     )
     if err != SQLITE_OK
@@ -337,7 +338,7 @@ function sqlite3_bind_blob(stmt, i, val, nbytes)
     err = ccall(
         (:sqlite3_bind_blob, SQLITELIB),
         Cint,
-        (Ptr{Void}, Cint, Ptr{Void}, Cint, Void),
+        (Ptr{Void}, Cint, Ptr{Void}, Cint, Ptr{Void}),
         stmt,
         i,
         val,

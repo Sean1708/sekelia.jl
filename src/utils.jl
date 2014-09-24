@@ -132,7 +132,7 @@ bind(stmt, i, val::Int32) = wrapper.sqlite3_bind_int(stmt, i, val)
 bind(stmt, i, val::Int64) = wrapper.sqlite3_bind_int64(stmt, i, val)
 bind(stmt, i, val::Float64) = wrapper.sqlite3_bind_double(stmt, i, val)
 bind(stmt, i, val::String) = wrapper.sqlite3_bind_text(stmt, i, val)
-bind(stmt, i, n, val::Ptr{Void}) = wrapper.sqlite3_bind_blob(stmt, i, n, val)
+bind(stmt, i, val::Ptr{Void}, n) = wrapper.sqlite3_bind_blob(stmt, i, val, n)
 
 # bind methods mapping to other bind methods
 function bind(stmt, i, val::Integer)
@@ -147,7 +147,7 @@ bind(stmt, i, val::Union(BigInt, BigFloat)) = bind(stmt, i, string(val))
 function bind{T}(stmt, i, val::Array{T})
     flat = reshape(val, length(val))
     nbytes = sizeof(flat)
-    bind(stmt, i, nbytes, convert(Ptr{Void}, flat))
+    bind(stmt, i, convert(Ptr{Void}, flat), nbytes)
 end
 
 function bindparameters(stmt, values)
@@ -161,7 +161,7 @@ function bindparameters(stmt, values)
         error("$(nvalues) values supplied for $(nparams) parameters")
     else
         for i in 1:nparams
-            bind(i, values[i])
+            bind(stmt, i, values[i])
         end
     end
 end
