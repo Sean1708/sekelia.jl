@@ -225,7 +225,131 @@ function sqlite3_column_blob(stmt, col)
     # the statement is finalised
     return deepcopy(temparr)
 end
-     
+
+function sqlite3_bind_parameter_count(stmt)
+    #=
+     Query number of variables in prepared statement.
+    =#
+    return int(
+        ccall(
+            (:sqlite3_bind_parameter_count, SQLITELIB),
+            Cint,
+            (Ptr{Void},),
+            stmt
+        )
+    )
+end
+
+function sqlite3_bind_null(stmt, i)
+    #=
+     Bind Null to a parameter.
+    =#
+    err = ccall(
+        (:sqlite3_bind_null, SQLITELIB),
+        Cint,
+        (Ptr{Void}, Cint),
+        stmt,
+        i
+    )
+    if err != SQLITE_OK
+        sqlite3_finalize(stmt)
+        error("could not bind parameter: $(sqlite3_errstr(err))")
+    end
+end
+
+function sqlite3_bind_int(stmt, i, val)
+    #=
+     Bind an Int32 to a parameter.
+    =#
+    err = ccall(
+        (:sqlite3_bind_int, SQLITELIB),
+        Cint,
+        (Ptr{Void}, Cint, Cint),
+        stmt,
+        i,
+        val
+    )
+    if err != SQLITE_OK
+        sqlite3_finalize(stmt)
+        error("could not bind parameter: $(sqlite3_errstr(err))")
+    end
+end
+
+function sqlite3_bind_int64(stmt, i, val)
+    #=
+     Bind an Int64 to a parameter.
+    =#
+    err = ccall(
+        (:sqlite3_bind_int64, SQLITELIB),
+        Cint,
+        (Ptr{Void}, Cint, Clonglong),
+        stmt,
+        i,
+        val
+    )
+    if err != SQLITE_OK
+        sqlite3_finalize(stmt)
+        error("could not bind parameter: $(sqlite3_errstr(err))")
+    end
+end
+
+function sqlite3_bind_double(stmt, i, val)
+    #=
+     Bind a Float64 to a parameter.
+    =#
+    err = ccall(
+        (:sqlite3_bind_double, SQLITELIB),
+        Cint,
+        (Ptr{Void}, Cint, Cdouble),
+        stmt,
+        i,
+        val
+    )
+    if err != SQLITE_OK
+        sqlite3_finalize(stmt)
+        error("could not bind parameter: $(sqlite3_errstr(err))")
+    end
+end
+
+function sqlite3_bind_text(stmt, i, val)
+    #=
+     Bind a String to a parameter.
+    =#
+    err = ccall(
+        (:sqlite3_bind_text, SQLITELIB),
+        Cint,
+        (Ptr{Void}, Cint, Cdouble, Void),
+        stmt,
+        i,
+        val,
+        -1  # SQLITE_TRANSIENT
+    )
+    if err != SQLITE_OK
+        sqlite3_finalize(stmt)
+        error("could not bind parameter: $(sqlite3_errstr(err))")
+    end
+end
+
+function sqlite3_bind_blob(stmt, i, val, nbytes)
+    #=
+     Bind a Ptr{Void} to an argument.
+    =#
+    err = ccall(
+        (:sqlite3_bind_blob, SQLITELIB),
+        Cint,
+        (Ptr{Void}, Cint, Ptr{Void}, Cint, Void),
+        stmt,
+        i,
+        val,
+        nbytes,
+        -1  # SQLITE_TRANSIENT
+    )
+    if err != SQLITE_OK
+        sqlite3_finalize(stmt)
+        error("could not bind parameter: $(sqlite3_errstr(err))")
+    end
+end
+
 function sqlite3_finalize(stmt)
     #=
      Free memory associated with the statement pointer.

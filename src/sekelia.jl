@@ -67,7 +67,7 @@ function close(db::SQLiteDB)
     wrapper.sqlite3_close_v2(db.handle)
 end
 
-function execute(db, stmt; header=false, types=false)
+function execute(db, stmt, values...; header=false, types=false)
     #=
      Execute the given statement on the given db, returning results if any.
 
@@ -84,6 +84,7 @@ function execute(db, stmt; header=false, types=false)
     utils.ismult(stmt) && warn("only the first statement will be executed")
 
     prepstmt = wrapper.sqlite3_prepare_v2(db.handle, stmt)
+    utils.bindparameters(prepstmt, values)
     status = wrapper.sqlite3_step(prepstmt)
 
     if status == wrapper.SQLITE_ROW
