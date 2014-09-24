@@ -60,12 +60,8 @@ end
 # avoid name clashes with predefined connect
 connectdb = connect
 
-function close(db::SQLiteDB)
-    #=
-     Close the database connection and cause the handle to be unusable.
-    =#
-    wrapper.sqlite3_close_v2(db.handle)
-end
+# close databse, causing handle to become unusable
+close(db::SQLiteDB) = wrapper.sqlite3_close_v2(db.handle)
 
 function execute(db, stmt, values...; header=false, types=false)
     #=
@@ -110,34 +106,6 @@ function transaction(db, mode="DEFERRED")
     end
 end
 
-function commit(db)
-    #=
-     Commit the current transaction.
-    =#
-    execute(db, "COMMIT TRANSACTION;")
-end
-
-function commit(db, name)
-    #=
-     Release the savepoint whose name is name converted to String.
-    =#
-    execute(db, "RELEASE SAVEPOINT $(name);")
-end
-
-function rollback(db)
-    #=
-     Rollback current transaction.
-    =#
-    execute(db, "ROLLBACK TRANSACTION;")
-end
-
-function rollback(db, name)
-    #=
-     Rollback to savepoint whose name is name converted to String.
-    =#
-    execute(db, "ROLLBACK TRANSACTION TO SAVEPOINT $(name);")
-end
-
 function transaction(f::Function, db)
     #=
      Execute the function f within a transaction.
@@ -155,6 +123,14 @@ function transaction(f::Function, db)
         commit(db, name)
     end
 end
+
+# commit a transaction or savepoint (if name is given)
+commit(db) = execute(db, "COMMIT TRANSACTION;")
+commit(db, name) = execute(db, "RELEASE SAVEPOINT $(name);")
+
+# rollback transaction or savepoint (if name is given)
+rollback(db) = execute(db, "ROLLBACK TRANSACTION;")
+rollback(db, name) = execute(db, "ROLLBACK TRANSACTION TO SAVEPOINT $(name);")
 
 
 end  # module
