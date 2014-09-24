@@ -100,6 +100,7 @@ function retrievecoltype(stmt, col)
         # Null is nothing
         return Nothing
     else
+        wrapper.sqlite3_finalize(stmt)
         error("unknown datatype code: $(coltype)")
     end
 end

@@ -78,10 +78,11 @@ function execute(db, stmt, values...; header=false, types=false)
      Each row is returned as a tuple of values converted to the native
      representation using int(), float() or bytestring().
 
-     execute() will only execute the first statement passed and will attempt to
-     warn the user if multiple statements are passed.
+     execute() will only execute the first statement passed and will raise an
+     error if multiple statements are passed. This protects against statements
+     incorrectly constructed using string interpolation.
     =#
-    utils.ismult(stmt) && warn("only the first statement will be executed")
+    utils.ismult(stmt) && error("can't execute multiple statements")
 
     prepstmt = wrapper.sqlite3_prepare_v2(db.handle, stmt)
     utils.bindparameters(prepstmt, values)
