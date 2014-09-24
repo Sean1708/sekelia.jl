@@ -207,7 +207,7 @@ function sqlite3_column_blob(stmt, col)
     col -= 1
     temparr = pointer_to_array(
         ccall(
-            (:sqlite3_column_text, SQLITELIB),
+            (:sqlite3_column_blob, SQLITELIB),
             Ptr{Uint8},
             (Ptr{Void}, Cint),
             stmt,
