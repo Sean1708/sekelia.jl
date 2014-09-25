@@ -1,7 +1,3 @@
-using ..SQLITELIB
-include("SQLite_consts.jl")
-
-
 function sqlite3_open(file)
     #=
      Create or open SQLite3 database.
@@ -395,3 +391,4 @@ function sqlite3_errstr(errcode)
         )
     )
 end
+

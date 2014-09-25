@@ -1,20 +1,5 @@
 module sekelia
 
-# look for user's libsqlite3 and throw error if it could not be found
-const SQLITELIB = begin
-    local lib = find_library(
-        ["libsqlite3"],
-        [get(ENV, "SEKELIA_SQLITE", [])]
-    )
-    if lib == ""
-        info("libsqlite3 could not be found")
-        info("consider setting SEKELIA_SQLITE environment variable")
-        error("SQLite3 library could not be loaded")
-    else
-        lib
-    end
-end
-
 
 # bypass database name checking in utils.fixfilename()
 immutable SpecialDB
@@ -24,15 +9,23 @@ const MEMDB = SpecialDB(":memory:")
 const DISKDB = SpecialDB("")
 
 
-module wrapper
-include("wrapper.jl")
+module api
+include("api/constants.jl")
+include("api/functions.jl")
 end
 
 module utils
+using ..SpecialDB
+using ..api
 include("utils.jl")
+include("utils/bind.jl")
+include("utils/row.jl")
 end
 
-export MEMDB, DISKDB, connectdb, close, execute, transaction, commit, rollback
+
+export MEMDB, DISKDB
+export connectdb, close, execute, transaction, commit, rollback
+using .utils.bind; export bind
 
 
 type SQLiteDB
@@ -54,14 +47,14 @@ function connect(file=MEMDB)
      be created.
     =#
     file = utils.fixfilename(file)
-    handle = wrapper.sqlite3_open(file)
+    handle = api.sqlite3_open(file)
     return SQLiteDB(file, handle)
 end
 # avoid name clashes with predefined connect
 connectdb = connect
 
 # close databse, causing handle to become unusable
-close(db::SQLiteDB) = wrapper.sqlite3_close_v2(db.handle)
+close(db::SQLiteDB) = api.sqlite3_close_v2(db.handle)
 
 function execute(db, stmt, values...; header=false, types=false)
     #=
@@ -80,14 +73,14 @@ function execute(db, stmt, values...; header=false, types=false)
     =#
     utils.ismult(stmt) && error("can't execute multiple statements")
 
-    prepstmt = wrapper.sqlite3_prepare_v2(db.handle, stmt)
+    prepstmt = api.sqlite3_prepare_v2(db.handle, stmt)
     utils.bindparameters(prepstmt, values)
-    status = wrapper.sqlite3_step(prepstmt)
+    status = api.sqlite3_step(prepstmt)
 
-    if status == wrapper.SQLITE_ROW
+    if status == api.SQLITE_ROW
         return @task utils.rowiter(prepstmt, header, types)
     else
-        wrapper.sqlite3_finalize(prepstmt)
+        api.sqlite3_finalize(prepstmt)
     end
 end
 
@@ -134,3 +127,4 @@ rollback(db, name) = execute(db, "ROLLBACK TRANSACTION TO SAVEPOINT $(name);")
 
 
 end  # module
+
