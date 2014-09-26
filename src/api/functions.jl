@@ -319,7 +319,7 @@ function sqlite3_bind_text(stmt, i, val)
         i,
         val,
         sizeof(val)+1,
-        -1  # SQLITE_TRANSIENT
+        SQLITE_TRANSIENT
     )
     if err != SQLITE_OK
         sqlite3_finalize(stmt)
@@ -339,7 +339,7 @@ function sqlite3_bind_blob(stmt, i, val, nbytes)
         i,
         val,
         nbytes,
-        -1  # SQLITE_TRANSIENT
+        SQLITE_TRANSIENT
     )
     if err != SQLITE_OK
         sqlite3_finalize(stmt)
