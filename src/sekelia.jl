@@ -92,7 +92,7 @@ function transaction(db, mode="DEFERRED")
      transaction of that (or the default) type is started. Otherwise a savepoint
      is created whose name is mode converted to String.
     =#
-    if upper(mode) in ["", "DEFERRED", "IMMEDIATE", "EXCLUSIVE"]
+    if uppercase(mode) in ["", "DEFERRED", "IMMEDIATE", "EXCLUSIVE"]
         execute(db, "BEGIN $(mode) TRANSACTION;")
     else
         execute(db, "SAVEPOINT $(mode);")

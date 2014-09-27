@@ -17,15 +17,19 @@ using Base.Test
 db = sekelia.connect()
 @test db.name == ":memory:"
 
-sekelia.execute(
-    db,
-    """CREATE TABLE testtable (
-        testcol TEXT,
-        num INTEGER,
-        fl REAL,
-        bl BLOB
-    );"""
-)
+transaction(db) do
+    sekelia.execute(
+        db,
+        """CREATE TABLE testtable (
+            testcol TEXT,
+            num INTEGER,
+            fl REAL,
+            bl BLOB
+        );"""
+    )
+end
+
+transaction(db)
 sekelia.execute(
     db,
     """INSERT INTO testtable VALUES (
@@ -35,6 +39,9 @@ sekelia.execute(
         X'010101'
     );"""
 )
+commit(db)
+
+transaction(db, "sp")
 sekelia.execute(
     db,
     """INSERT INTO testtable VALUES (
@@ -44,6 +51,8 @@ sekelia.execute(
         NULL
     )"""
 )
+commit(db, "sp")
+
 sekelia.execute(
     db,
     """INSERT INTO testtable VALUES (?, ?, ?, ?)""",
@@ -52,7 +61,16 @@ sekelia.execute(
     3.3,
     Uint8[3, 3, 3]
 )
+
 @test_throws Exception sekelia.execute(db, "SELECT * FROM testtable; VACUUM;")
+
+@test_throws Exception transaction(db) do
+    sekelia.execute(
+        db,
+        """INSERT INTO testtable VALUES('No.', 0, 0, NULL)"""
+    )
+    error()
+end
 
 res = sekelia.execute(db, "SELECT * FROM testtable"; header=true, types=true)
 @test consume(res) == ("testcol", "num", "fl", "bl")
@@ -61,6 +79,6 @@ res = sekelia.execute(db, "SELECT * FROM testtable"; header=true, types=true)
 @test consume(res) == ("Second row.", 2, 2.2, nothing)
 @test consume(res) == ("Third row.", 3, 3.3, Uint8[3,3,3])
 # finalize statement
-consume(res)
+@test consume(res) == nothing
 
 sekelia.close(db)
