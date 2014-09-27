@@ -23,6 +23,28 @@ function bind{T}(stmt, i, val::Array{T})
     bind(stmt, i, convert(Ptr{Void}, flat), nbytes)
 end
 
+bindwrapper(stmt, i, values::(Any...,)) = bind(stmt, i, values[i])
+#= CAN THIS BE DONE IN A MORE ELEGANT WAY? =#
+function bindwrapper{V}(stmt, i, values::Dict{Any, V})
+    name = api.sqlite3_bind_parameter_name(stmt, i)
+    name == "" && error("nameless parameters should be passed as a tuple")
+    #= CAN THIS BE DONE IN A MORE ELEGANT WAY? =#
+    value = get(values, name) do
+        get(values, symbol(name))
+    end
+    bind(stmt, i, value)
+end
+function bindwrapper{S <: String, V}(stmt, i, values::Dict{S, V})
+    name = api.sqlite3_bind_parameter_name(stmt, i)
+    name == "" && error("nameless parameters should be passed as a tuple")
+    bind(stmt, i, values[name])
+end
+function bindwrapper{V}(stmt, i, values::Dict{Symbol, V})
+    name = api.sqlite3_bind_parameter_name(stmt, i)
+    name =="" && error("nameless parameters should be passed as a tuple")
+    bind(stmt, i, values[symbol(name)])
+end
+
 function bindparameters(stmt, values)
     #=
      Bind the parameters in the tuple values to the variables in stmt.
@@ -34,7 +56,7 @@ function bindparameters(stmt, values)
         error("$(nvalues) values supplied for $(nparams) parameters")
     else
         for i in 1:nparams
-            bind(stmt, i, values[i])
+            bindwrapper(stmt, i, values)
         end
     end
 end

@@ -56,7 +56,7 @@ connectdb = connect
 # close databse, causing handle to become unusable
 close(db::SQLiteDB) = api.sqlite3_close_v2(db.handle)
 
-function execute(db, stmt, values...; header=false, types=false)
+function execute(db, stmt, values=(); header=false, types=false)
     #=
      Execute the given statement on the given db, returning results if any.
 

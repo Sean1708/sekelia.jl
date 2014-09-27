@@ -236,6 +236,26 @@ function sqlite3_bind_parameter_count(stmt)
     )
 end
 
+function sqlite3_bind_parameter_name(stmt, i)
+    #=
+     Query the name of the i-th parameter.
+    =#
+    name = ccall(
+        (:sqlite3_bind_parameter_name, SQLITELIB),
+        Ptr{Uint8},
+        (Ptr{Void}, Cint),
+        stmt,
+        i
+    )
+    if name == C_NULL
+        # nameless parameter
+        return ""
+    else
+        # don't return the ':', '@' or '$'
+        return bytestring(name)[2:end]
+    end
+end
+
 function sqlite3_bind_null(stmt, i)
     #=
      Bind Null to a parameter.
