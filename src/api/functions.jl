@@ -382,6 +382,22 @@ function sqlite3_finalize(stmt)
     end
 end
 
+function sqlite3_extended_result_codes(handle, n)
+    #=
+     Set the database to return extended result codes.
+    =#
+    err = ccall(
+        (:sqlite3_extended_result_codes, SQLITELIB),
+        Cint,
+        (Ptr{Void}, Cint),
+        handle,
+        n
+    )
+    if err != SQLITE_OK
+        error("could not set extended result codes: $(sqlite3_errstr(err))")
+    end
+end
+
 function sqlite3_errmsg(handle)
     #=
      Query error message from database pointed to by handle.

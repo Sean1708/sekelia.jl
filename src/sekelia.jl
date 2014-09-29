@@ -48,6 +48,7 @@ function connect(file=MEMDB)
     =#
     file = utils.fixfilename(file)
     handle = api.sqlite3_open(file)
+    api.sqlite3_extended_result_codes(handle, 1)
     return SQLiteDB(file, handle)
 end
 # avoid name clashes with predefined connect
