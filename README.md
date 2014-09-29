@@ -117,8 +117,8 @@ should be avoided where possible.
 
 ### Executing multiple statments
 
-    typealias ValueContainers Union(Vector{(Any...,)}, Vector{Dict{S, T}})
-    execute(db, stmt, values::ValueContainers)
+    execute(db::Database, stmt::String, values::Vector{(Any...,)})
+    execute{S, T}(db::Database, stmt::String, values::Vector{Dict{S, T}})
 
 When `values` is a Vector (1-D Array) of the tuples or dictionaries described
 above the statement is executed once for each tuple or dictionary in the Vector.

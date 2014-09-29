@@ -96,6 +96,6 @@ res = sekelia.execute(db, "SELECT * FROM testtable"; header=true, types=true)
 ccall(
     (:sqlite3_close, sekelia.api.SQLITELIB),
     Cint,
-    (Ptr{Void},)
+    (Ptr{Void},),
     db.handle
 )
