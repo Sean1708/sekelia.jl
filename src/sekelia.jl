@@ -85,6 +85,16 @@ function execute(db, stmt, values=(); header=false, types=false)
     end
 end
 
+typealias ValueContainers Union(Vector{(Any...,)}, Vector{Dict{S, T}})
+function execute(db, stmt, values::ValueContainers)
+    #=
+     Repeatedly execute the stmt using the values in each tuple/dict.
+    =#
+    for tup in values
+        execute(db, stmt, tup)
+    end
+end
+
 function transaction(db, mode="DEFERRED")
     #=
      Begin a transaction in the spedified mode, default "DEFERRED".
