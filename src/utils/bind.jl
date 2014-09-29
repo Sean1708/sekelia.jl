@@ -17,6 +17,7 @@ end
 bind(stmt, i, val::FloatingPoint) = bind(stmt, i, float64(val))
 bind(stmt, i, val::Union(BigInt, BigFloat)) = bind(stmt, i, string(val))
 bind(stmt, i, val::Char) = bind(stmt, i, string(val))
+bind(stmt, i, val::Symbol) = bind(stmt, i, string(val))
 function bind{T}(stmt, i, val::Array{T})
     flat = reshape(val, length(val))
     nbytes = sizeof(flat)
