@@ -44,9 +44,9 @@ explained below.
 
 * `connectdb(file) | sekelia.connect(file)`
 
-Open or create a database at the location specified by the string `file`. The
-`SQLiteDB` object that is returned must be referenced for as long as it is open
-to avoid Julia garbage collecting the handle, causing memory leaks.
+  Open or create a database at the location specified by the string `file`. The
+  `SQLiteDB` object that is returned must be referenced for as long as it is open
+  to avoid Julia garbage collecting the handle, causing memory leaks.
 
 * `close(db::Database)`
 
