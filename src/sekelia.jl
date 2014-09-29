@@ -27,8 +27,8 @@ export MEMDB, DISKDB
 export connectdb, close, execute, transaction, commit, rollback
 using .utils.bind; export bind
 
-
-type SQLiteDB
+abstract Database
+type SQLiteDB <: Database
     #=
      name : filename of the database
      handle : pointer associated with the database
@@ -55,9 +55,9 @@ end
 connectdb = connect
 
 # close databse, causing handle to become unusable
-close(db::SQLiteDB) = api.sqlite3_close_v2(db.handle)
+close(db::Database) = api.sqlite3_close_v2(db.handle)
 
-function execute(db, stmt, values=(); header=false, types=false)
+function execute(db::Database, stmt::String, values=(); header=false, types=false)
     #=
      Execute the given statement on the given db, returning results if any.
 
