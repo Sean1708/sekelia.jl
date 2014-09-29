@@ -42,17 +42,17 @@ contain both fields which `SQLiteDB` contains.
 Sekelia also exports 7 functions and 2 constants into the global scope, these are
 explained below.
 
-### `connectdb(file) | sekelia.connect(file)`
+`connectdb(file) | sekelia.connect(file)`
 
 Open or create a database at the location specified by the string `file`. The
 `SQLiteDB` object that is returned must be referenced for as long as it is open
 to avoid Julia garbage collecting the handle, causing memory leaks.
 
-### `close(db::Database)`
+`close(db::Database)`
 
 Close the database referenced by the Database `db`.
 
-### `execute(db::Database, stmt::String, values=(); header=false, types=false)`
+`execute(db::Database, stmt::String, values=(); header=false, types=false)`
 
 Execute the SQL statement `stmt`. If `stmt` contains multiple SQL statements
 `execute` will throw an error, this helps protect against SQL Injection and
@@ -105,8 +105,8 @@ Some examples are
 Dictionary keys can be a mix of Strings and Symbols but this method is slow so
 should be avoided where possible.
 
-### `typealias ValueContainers Union(Vector{(Any...,)}, Vector{Dict{S, T}})
-### `execute(db, stmt, values::ValueContainers)
+`typealias ValueContainers Union(Vector{(Any...,)}, Vector{Dict{S, T}})
+`execute(db, stmt, values::ValueContainers)
 
 When `values` is a Vector (1-D Array) of the tuples or dictionaries described
 above the statement is executed once for each tuple or dictionary in the Vector.
@@ -116,12 +116,12 @@ The body of the function is quite simply
         execute(db, stmt, tup)
     end
 
-### `bind(stmt, i, ::Nothing) # => NULL`
-### `bind(stmt, i, val::Int32) # => INTEGER`
-### `bind(stmt, i, val::Int64) # => INTEGER`
-### `bind(stmt, i, val::Float64) # => REAL`
-### `bind(stmt, i, val::String) # => TEXT`
-### `bind(stmt, i, val::Ptr{Void}, n) # => BLOB`
+`bind(stmt, i, ::Nothing) # => NULL`
+`bind(stmt, i, val::Int32) # => INTEGER`
+`bind(stmt, i, val::Int64) # => INTEGER`
+`bind(stmt, i, val::Float64) # => REAL`
+`bind(stmt, i, val::String) # => TEXT`
+`bind(stmt, i, val::Ptr{Void}, n) # => BLOB`
 
 When parameter substitution is used one of the above bind methods is called to
 coerce the values into a SQLite3 Datatype. You can define your own bind method
@@ -156,14 +156,14 @@ you store must be flattened like in the following definition
 To see which methods have been defined, please see src/utils/bind.jl in the
 source code.
 
-### `transaction(db, mode="DEFERRED")`
+`transaction(db, mode="DEFERRED")`
 
 If mode is one of "", "DEFERRED", "IMMEDIATE" or "EXCLUSIVE" a transaction of
 that [type](http://www.sqlite.org/lang_transaction.html) will be started.
 Otherwise a [savepoint](http://www.sqlite.org/lang_savepoint.html) will be
 created whose name is `mode` converted to a String via interpolation.
 
-### `transaction(f::Function, db)`
+`transaction(f::Function, db)`
 
 Designed to be used with the do-block syntax this function will begin a
 transaction then perform the function `f`. If `f` throws an error the
@@ -184,15 +184,14 @@ example would be
 
 This is implemented using savepoints so you can safely nest it if you wish.
 
-### `commit(db)`
-### `commit(db, name)`
+`commit(db)`
+`commit(db, name)`
 
 In the first form commits the curent transaction, in the second form releases
 the savepoint `name`.
 
-### `rollback(db)`
-### `rollback(db, name)`
+`rollback(db)`
+`rollback(db, name)`
 
 Either rolls back the current transaction or rolls back the transaction to the
 savepoint `name`.
-
