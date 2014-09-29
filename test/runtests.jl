@@ -92,4 +92,10 @@ res = sekelia.execute(db, "SELECT * FROM testtable"; header=true, types=true)
 # finalize statement
 @test consume(res) == nothing
 
-sekelia.close(db)
+# travis has an old version of the SQLite library
+ccall(
+    (:sqlite3_close, sekelia.api.SQLITELIB),
+    Cint,
+    (Ptr{Void},)
+    db.handle
+)
