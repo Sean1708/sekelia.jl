@@ -20,12 +20,15 @@ using ..api
 include("utils.jl")
 include("utils/bind.jl")
 include("utils/row.jl")
+include("utils/UDF.jl")
+include("utils/regex.jl")
 end
 
 
 export MEMDB, DISKDB
 export connectdb, close, execute, transaction, commit, rollback
 using .utils.bind; export bind
+using .utils.registerfunc; export registerfunc
 
 abstract Database
 type SQLiteDB <: Database
@@ -49,6 +52,7 @@ function connect(file=MEMDB)
     file = utils.fixfilename(file)
     handle = api.sqlite3_open(file)
     api.sqlite3_extended_result_codes(handle, 1)
+    utils.registerfunc(handle, "regexp", utils.regex, 2)
     return SQLiteDB(file, handle)
 end
 # avoid name clashes with predefined connect
