@@ -28,7 +28,7 @@ function sqlite3_close_v2(handle)
         handle
     )
     if err != SQLITE_OK
-        warn("error closing $(db.name): $(sqlite3_errstr(err))")
+        warn("error closing database: $(sqlite3_errstr(err))")
     end
 end
 
@@ -365,6 +365,225 @@ function sqlite3_bind_blob(stmt, i, val, nbytes)
         sqlite3_finalize(stmt)
         error("could not bind parameter: $(sqlite3_errstr(err))")
     end
+end
+
+function sqlite3_create_function_v2(db, name, nargs, enc, data,
+                                    func, step, final, destructor)
+    #=
+     Register a function with the database connection.
+    =#
+    err = ccall(
+        (:sqlite3_create_function_v2, SQLITELIB),
+        Cint,
+        (
+            Ptr{Void}, Ptr{Uint8}, Cint, Cint, Ptr{Void},
+            Ptr{Void}, Ptr{Void}, Ptr{Void}, Ptr{Void}
+        ),
+        db,
+        name,
+        nargs,
+        enc,
+        data,
+        func,
+        step,
+        final,
+        destructor
+    )
+    if err != SQLITE_OK
+        error("could not register function $(name): $(api.sqlite_errstr(err))")
+    end
+end
+
+function sqlite3_value_double(value)
+    #=
+     Retrieve the value as a REAL.
+    =#
+    return float(
+        ccall(
+            (:sqlite3_value_double, SQLITELIB),
+            Cdouble,
+            (Ptr{Void},),
+            value
+        )
+    )
+end
+
+function sqlite3_value_int(value)
+    #=
+     Retrive the value as an integer.
+    =#
+    return int32(
+        ccall(
+            (:sqlite3_value_int, SQLITELIB),
+            Cint,
+            (Ptr{Void},),
+            value
+        )
+    )
+end
+
+function sqlite3_value_int64(value)
+    #=
+     Retrieve the as a 64-bit integer.
+    =#
+    return int64(
+        ccall(
+            (:sqlite3_value_int64, SQLITELIB),
+            Clonglong,
+            (Ptr{Void},),
+            value
+        )
+    )
+end
+
+function sqlite3_value_text(value)
+    #=
+     Retrieve the value as a string.
+    =#
+    return bytestring(
+        ccall(
+            (:sqlite3_value_text, SQLITELIB),
+            Ptr{Uint8},
+            (Ptr{Void},),
+            value
+        )
+    )
+end
+
+function sqlite3_value_blob(value)
+    #=
+     Retrieve the value as a BLOB.
+
+     Return the value as a julia bytearray. The sqlite3_column_text function is
+     used since the only conversion that happens from BLOB to TEXT is the
+     addition of a nul-byte.
+    =#
+    temparr = pointer_to_array(
+        ccall(
+            (:sqlite3_value_blob, SQLITELIB),
+            Ptr{Uint8},
+            (Ptr{Void},),
+            value
+        ),
+        ccall(
+            (:sqlite3_value_bytes, SQLITELIB),
+            Cint,
+            (Ptr{Void},),
+            value
+        )
+    )
+    # return a deepcopy otherwise values in the array are prone to changing when
+    # the statement is finalised
+    return deepcopy(temparr)
+end
+
+function sqlite_value_type(value)
+    #=
+     Query the type of the value.
+    =#
+    return int(
+        ccall(
+            (:sqlite3_value_type, SQLITELIB),
+            Cint,
+            (Ptr{Void},),
+            value
+        )
+    )
+end
+
+function sqlite3_result_error(context, msg)
+    #=
+     Throw an exception with the message msg.
+    =#
+    ccall(
+        (:sqlite3_result_error, SQLITELIB),
+        Void,
+        (Ptr{Void}, Ptr{Uint8}, Cint),
+        context,
+        msg,
+        sizeof(msg)+1
+    )
+end
+
+function sqlite3_result_double(context, n)
+    #=
+     Set the result of the function context to the double n.
+    =#
+    ccall(
+        (:sqlite3_result_double, SQLITELIB),
+        Void,
+        (Ptr{Void}, Cdouble),
+        context,
+        n
+    )
+end
+
+function sqlite3_result_int(context, n)
+    #=
+     Set the result of the function context to the 32-bit integer n.
+    =#
+    ccall(
+        (:sqlite3_result_int, SQLITELIB),
+        Void,
+        (Ptr{Void}, Cint),
+        context,
+        n
+    )
+end
+
+function sqlite3_result_int64(context, n)
+    #=
+     Set the result of the function context to the 64-bit integer n.
+    =#
+    ccall(
+        (:sqlite3_result_int64, SQLITELIB),
+        Void,
+        (Ptr{Void}, Clonglong),
+        context,
+        n
+    )
+end
+
+function sqlite3_result_null(context)
+    #=
+     Set the result of the function context to be NULL.
+    =#
+    ccall(
+        (:sqlite3_result_null, SQLITELIB),
+        Void,
+        (Ptr{Void},),
+        context
+    )
+end
+
+function sqlite3_result_text(context, str)
+    #=
+     Set the result of the function context to be the string str.
+    =#
+    ccall(
+        (:sqlite3_result_text, SQLITELIB),
+        Void,
+        (Ptr{Void}, Ptr{Uint8}, Cint),
+        context,
+        str,
+        sizeof(str)+1,
+        SQLITE_TRANSIENT
+    )
+end
+
+function sqlite3_result_blob(context, ptr, nbytes)
+    #=
+     Set the result of the function context to be the void* ptr.
+    =#
+    ccall(
+        (:sqlite3_result_blob, SQLITELIB),
+        Void,
+        (Ptr{Void}, Ptr{Void}, Cint, Ptr{Void}),
+        context,
+        ptr,
+        nbytes,
+        SQLITE_TRANSIENT
+    )
 end
 
 function sqlite3_finalize(stmt)

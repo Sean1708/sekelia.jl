@@ -92,6 +92,10 @@ res = sekelia.execute(db, "SELECT * FROM testtable"; header=true, types=true)
 # finalize statement
 @test consume(res) == nothing
 
+res = sekelia.execute(db, "SELECT * FROM testtable WHERE testcol REGEXP 'Firs'")
+@test consume(res) == ("First row.", 1, 1.1, Uint8[1, 1, 1])
+@test consume(res) == nothing
+
 # travis has an old version of the SQLite library
 ccall(
     (:sqlite3_close, sekelia.api.SQLITELIB),

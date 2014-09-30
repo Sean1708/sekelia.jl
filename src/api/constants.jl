@@ -25,6 +25,16 @@ const SQLITE_TEXT = 3
 const SQLITE_BLOB = 4
 const SQLITE_NULL = 5
 
+# text encodings
+const SQLITE_UTF8 = 1
+const SQLITE_UTF16LE = 2
+const SQLITE_UTF16BE = 3
+const SQLITE_UTF16 = 4
+const SQLITE_UTF16_ALIGNED = 8
+
+# function flags
+const SQLITE_DETERMINISTIC = 0x800
+
 # special destructor values
 const SQLITE_TRANSIENT = convert(Ptr{Void}, -1)
 const SQLITE_STATIC = convert(Ptr{Void}, 0)

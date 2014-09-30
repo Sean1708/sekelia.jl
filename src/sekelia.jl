@@ -8,6 +8,8 @@ end
 const MEMDB = SpecialDB(":memory:")
 const DISKDB = SpecialDB("")
 
+abstract Database
+
 
 module api
 include("api/constants.jl")
@@ -20,17 +22,22 @@ using ..api
 include("utils.jl")
 include("utils/bind.jl")
 include("utils/row.jl")
+end
+
+module UDF
+using ..Database
+using ..api
 include("utils/UDF.jl")
 include("utils/regex.jl")
+export registerfunc
 end
 
 
 export MEMDB, DISKDB
 export connectdb, close, execute, transaction, commit, rollback
 using .utils.bind; export bind
-using .utils.registerfunc; export registerfunc
 
-abstract Database
+
 type SQLiteDB <: Database
     #=
      name : filename of the database
@@ -51,9 +58,12 @@ function connect(file=MEMDB)
     =#
     file = utils.fixfilename(file)
     handle = api.sqlite3_open(file)
+
+    db = SQLiteDB(file, handle)
     api.sqlite3_extended_result_codes(handle, 1)
-    utils.registerfunc(handle, "regexp", utils.regex, 2)
-    return SQLiteDB(file, handle)
+    UDF.registerfunc(db, 2, UDF.regex; name="regexp")
+
+    return db
 end
 # avoid name clashes with predefined connect
 connectdb = connect
