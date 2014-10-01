@@ -29,7 +29,7 @@ using ..Database
 using ..api
 include("UDF.jl")
 include("UDF/regex.jl")
-export registerfunc
+export registerfunc, sqlvalue, sqlreturn, sqlerror
 end
 
 

@@ -477,7 +477,7 @@ function sqlite3_value_blob(value)
     return deepcopy(temparr)
 end
 
-function sqlite_value_type(value)
+function sqlite3_value_type(value)
     #=
      Query the type of the value.
     =#

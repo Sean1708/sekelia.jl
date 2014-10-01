@@ -1,16 +1,15 @@
 function regex(context, nargs, values)
+    if nargs != 2
+        sqlerror(context, "incorrect number of arguments")
+    end
 
-    rgx_val = unsafe_load(values, 1)
-    rgx = api.sqlite3_value_text(rgx_val)
+    rgx = Regex(sqlvalue(values, 1))
+    str = sqlvalue(values, 2)
 
-    str_val = unsafe_load(values, 2)
-    str = api.sqlite3_value_text(str_val)
-
-    r = Regex(rgx)
-    if ismatch(r, str)
-        api.sqlite3_result_int(context, 1)
+    if ismatch(rgx, str)
+        sqlreturn(context, 1)
     else
-        api.sqlite3_result_int(context, 0)
+        sqlreturn(context, 0)
     end
 
     nothing

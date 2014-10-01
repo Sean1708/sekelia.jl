@@ -45,21 +45,21 @@ function registerfunc(db::Database, nargs::Integer, step::Function,
 end
 
 
-function retrievevalue(values, i)
+function sqlvalue(values, i)
     temp_val_ptr = unsafe_load(values, i)
     valuetype = api.sqlite3_value_type(temp_val_ptr)
 
-    if valuetype == SQLITE_INTEGER
+    if valuetype == api.SQLITE_INTEGER
         if WORD_SIZE == 64
             return api.sqlite3_value_int64(temp_val_ptr)
         else
             return api.sqlite3_value_int(temp_val_ptr)
         end
-    elseif valuetype == SQLITE_FLOAT
+    elseif valuetype == api.SQLITE_FLOAT
         return api.sqlite3_value_double(temp_val_ptr)
-    elseif valuetype == SQLITE_TEXT
+    elseif valuetype == api.SQLITE_TEXT
         return api.sqlite3_value_text(temp_val_ptr)
-    elseif valuetype == SQLITE_BLOB
+    elseif valuetype == api.SQLITE_BLOB
         return api.sqlite3_value_blob(temp_val_ptr)
     else
         return nothing
