@@ -27,8 +27,8 @@ end
 module UDF
 using ..Database
 using ..api
-include("utils/UDF.jl")
-include("utils/regex.jl")
+include("UDF.jl")
+include("UDF/regex.jl")
 export registerfunc
 end
 

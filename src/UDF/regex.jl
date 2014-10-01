@@ -1,4 +1,5 @@
 function regex(context, nargs, values)
+
     rgx_val = unsafe_load(values, 1)
     rgx = api.sqlite3_value_text(rgx_val)
 
