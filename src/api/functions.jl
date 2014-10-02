@@ -28,7 +28,7 @@ function sqlite3_close_v2(handle)
         handle
     )
     if err != SQLITE_OK
-        warn("error closing database: $(sqlite3_errstr(err))")
+        warn("error closing database: $(sqlite3_errmsg(handle))")
     end
 end
 
@@ -48,7 +48,7 @@ function sqlite3_prepare_v2(handle, query, next_stmt)
         [next_stmt]
     )
     if err != SQLITE_OK
-        error("could not prepare statement: $(sqlite3_errstr(err))")
+        error("could not prepare statement: $(sqlite3_errmsg(handle))")
     else
         return prepstmt_ptr[1]
     end
@@ -391,7 +391,7 @@ function sqlite3_create_function_v2(db, name, nargs, enc, data,
         destructor
     )
     if err != SQLITE_OK
-        error("could not register function $(name): $(api.sqlite_errstr(err))")
+        error("could not register function $(name): $(api.sqlite_errmsg(db))")
     end
 end
 
@@ -615,7 +615,7 @@ function sqlite3_extended_result_codes(handle, n)
         n
     )
     if err != SQLITE_OK
-        error("could not set extended result codes: $(sqlite3_errstr(err))")
+        error("could not set extended result codes: $(sqlite3_errmsg(handle))")
     end
 end
 
