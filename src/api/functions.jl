@@ -32,7 +32,7 @@ function sqlite3_close_v2(handle)
     end
 end
 
-function sqlite3_prepare_v2(handle, query)
+function sqlite3_prepare_v2(handle, query, next_stmt)
     #=
      Compile query to a byte-code program that can be executed.
     =#
@@ -45,7 +45,7 @@ function sqlite3_prepare_v2(handle, query)
         query,
         sizeof(query)+1,  # ensure NUL character is included
         prepstmt_ptr,
-        [C_NULL]
+        [next_stmt]
     )
     if err != SQLITE_OK
         error("could not prepare statement: $(sqlite3_errstr(err))")
@@ -201,6 +201,13 @@ function sqlite3_column_blob(stmt, col)
     =#
     # sqlite is 0-indexed, julia ain't
     col -= 1
+    nbytes = ccall(
+        (:sqlite3_column_bytes, SQLITELIB),
+        Cint,
+        (Ptr{Void}, Cint),
+        stmt,
+        col
+    )
     temparr = pointer_to_array(
         ccall(
             (:sqlite3_column_blob, SQLITELIB),
@@ -209,13 +216,7 @@ function sqlite3_column_blob(stmt, col)
             stmt,
             col
         ),
-        ccall(
-            (:sqlite3_column_bytes, SQLITELIB),
-            Cint,
-            (Ptr{Void}, Cint),
-            stmt,
-            col
-        )
+        nybtes
     )
     # return a deepcopy otherwise values in the array are prone to changing when
     # the statement is finalised
@@ -458,6 +459,12 @@ function sqlite3_value_blob(value)
      used since the only conversion that happens from BLOB to TEXT is the
      addition of a nul-byte.
     =#
+    nbytes = ccall(
+        (:sqlite3_value_bytes, SQLITELIB),
+        Cint,
+        (Ptr{Void},),
+        value
+    )
     temparr = pointer_to_array(
         ccall(
             (:sqlite3_value_blob, SQLITELIB),
@@ -465,12 +472,7 @@ function sqlite3_value_blob(value)
             (Ptr{Void},),
             value
         ),
-        ccall(
-            (:sqlite3_value_bytes, SQLITELIB),
-            Cint,
-            (Ptr{Void},),
-            value
-        )
+        nbytes
     )
     # return a deepcopy otherwise values in the array are prone to changing when
     # the statement is finalised

@@ -88,7 +88,7 @@ function execute(db::Database, stmt::String, values=(); header=false, types=fals
     =#
     utils.ismult(stmt) && error("can't execute multiple statements")
 
-    prepstmt = api.sqlite3_prepare_v2(db.handle, stmt)
+    prepstmt = api.sqlite3_prepare_v2(db.handle, stmt, C_NULL)
     utils.bindparameters(prepstmt, values)
     status = api.sqlite3_step(prepstmt)
 
