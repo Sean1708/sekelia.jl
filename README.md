@@ -1,3 +1,6 @@
+**THIS PACKAGE IS NO LONGER ACTIVELY DEVELOPED, PLEASE SEE THE OFFICIAL SQLITE PACKAGE (quinnj/SQLite.jl)**
+
+
 # sekelia
 
 [![Build Status](https://travis-ci.org/Sean1708/sekelia.jl.svg?branch=master)](https://travis-ci.org/Sean1708/sekelia.jl)
